@@ -1,0 +1,119 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using SyncF.Data
+@using DataLibrary
+@using SyncF.Models
+@using Microsoft.Extensions.Configuration
+
+<PageTitle>Login</PageTitle>
+
+@inject IDataAccess _data
+@inject IConfiguration _config
+@inject NavigationManager _nav
+<h3 class="center" style="color: #3353a0">Inicio de sesión</h3>
+<div class="row, center ">
+    <div class="col-md-4">
+        <section>
+            <EditForm Model="Input" method="post" OnValidSubmit="OnLogin" FormName="login">
+                <DataAnnotationsValidator />
+                <hr />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" />
+                    <label for="email" class="form-label">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" aria-required="true" />
+                    <label for="password" class="form-label">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Entrar</button>
+                </div>
+            </EditForm>
+        </section>
+    </div>
+</div>
+<br />
+@* <button class="btn btn-primary" @onclick="InsertData">Insert</button>
+<button class="btn btn-warning" @onclick="UpdateData">Update</button>
+<button class="btn btn-danger" @onclick="DeleteData">Delete</button>
+<br />
+@if(people == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    @foreach( var p in people)
+    {
+        <p>
+            @p.FirstName @p.LastName 
+        </p>
+    }
+  
+} *@
+<style>
+    .e-panel-header {
+        background-color: rgba(0, 0, 0, .1);
+        text-align: center;
+    }
+
+    .e-panel-content {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .income-container {
+        font-size: x-large;
+        color: #3353a0;
+        margin-top: 14px;
+        padding: 15px;
+    }
+</style>
+@code {
+    List<LoginModel> people;
+    private InputModel Input { get; set; } = new();
+    private async Task InsertData()
+    {
+        string sql = "INSERT INTO people(Id, FirstName, LastName)VALUES(@Id, @FirstName, @LastName);";
+        await _data.SaveData(sql, new { Id = "01", FirstName = "Rebeca", LastName = "Cervantes" }, _config.GetConnectionString("default"));
+        sql = "Select * from people";
+        people = await _data.LoadData<LoginModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
+    private async Task UpdateData()
+    {
+        string sql = "update people set FirstName = @FirstName WHERE Id = @Id;";
+        await _data.SaveData(sql, new { FirstName = "Cristobal", Id = "1" }, _config.GetConnectionString("default"));
+        sql = "Select * from people";
+        people = await _data.LoadData<LoginModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
+    private async Task DeleteData()
+    {
+        string sql = "Delete from people WHERE Id = @Id;";
+        await _data.SaveData(sql, new { Id = "1" }, _config.GetConnectionString("default"));
+        sql = "Select * from people";
+        people = await _data.LoadData<LoginModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        string sql = "SELECT * FROM people;";
+        people = await _data.LoadData<LoginModel, dynamic>(sql, new { },_config.GetConnectionString("default"));
+    }
+    public async Task OnLogin()
+    {
+
+
+        _nav.NavigateTo($"/", true);
+    }
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+    }
+}
