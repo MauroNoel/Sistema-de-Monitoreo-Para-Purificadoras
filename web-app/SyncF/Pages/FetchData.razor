@@ -1,0 +1,108 @@
+﻿@page "/fetchdata"
+
+<PageTitle>Weather forecast</PageTitle>
+
+@using SyncF.Data
+@inject WeatherForecastService ForecastService
+<h1 style="color: #3353a0"> Sensor de flujo en la llave de llenado</h1>
+<SfDatePicker TValue="DateTime?" Format="yyyy-MM-dd" Value="@DateValue">
+    <DatePickerEvents TValue="DateTime?" ValueChange="@onChange"></DatePickerEvents>
+</SfDatePicker>
+<SfDashboardLayout CellAspectRatio="1.5" Columns="3" AllowDragging="false" AllowFloating="true">
+    <DashboardLayoutPanels>
+
+        <DashboardLayoutPanel Column="0"  SizeY="0" >
+            <HeaderTemplate><div>Mediciones</div></HeaderTemplate>
+            <ContentTemplate><div>
+
+                        <span class ="income-container"> Cantidad actual: <br />
+                            4,300 L</span>
+
+            </div></ContentTemplate>
+        </DashboardLayoutPanel>
+
+        <DashboardLayoutPanel Column="3" Row="0" SizeX="2" SizeY="2">
+            <HeaderTemplate><div> Litros usados</div></HeaderTemplate>
+            <ContentTemplate><div>
+                    <br />
+                    <br />
+                        <SfChart>
+                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category"></ChartPrimaryXAxis>
+                            <ChartSeriesCollection>
+                                <ChartSeries DataSource="@SalesDetails" XName="X" YName="Y" Type="ChartSeriesType.Spline" Fill="#72aff8" SplineType="SplineType.Cardinal" Width="3">
+                                <ChartMarker Visible="true" Height="15" Width="15" Fill="#3353a0" Shape="ChartShape.Circle">
+                                    <ChartDataLabel Visible="true" />
+                                    </ChartMarker>
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                        </SfChart>
+             </div></ContentTemplate>
+        </DashboardLayoutPanel>
+
+        <DashboardLayoutPanel Column="0" Row="1">
+            <HeaderTemplate><div>Capacidad actual de la tuberia</div></HeaderTemplate>
+            <ContentTemplate>
+                <div>
+                    <br />
+                    <SfProgressBar Type="ProgressType.Circular" Height=50% Width=50% Value="85" Minimum="0" Maximum="100" TrackThickness="15" ProgressThickness="14" SegmentCount="10" CornerRadius="CornerType.Round" TrackColor="#72aff8" ShowProgressValue="true" ProgressColor="#3353a0">
+                        <ProgressBarAnimation Enable="true"></ProgressBarAnimation>
+                    </SfProgressBar>
+            </div></ContentTemplate>
+        </DashboardLayoutPanel>
+
+    </DashboardLayoutPanels>
+</SfDashboardLayout>
+
+
+<style>
+    .e-panel-header {
+        background-color: rgba(0, 0, 0, .1);
+        text-align: center;
+    }
+
+    .e-panel-content {
+        text-align: center;
+        margin-top: 10px;
+    }
+    .income-container
+    {
+        font-size: x-large;
+        color: #3353a0;
+        margin-top: 14px;
+        padding: 15px;
+    }
+</style>
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    }
+      public class ChartData
+    {
+        public string X { get; set;}
+        public double Y {get; set;}
+    }
+	
+    public List<ChartData> SalesDetails = new List<ChartData>
+	{
+        new ChartData { X= "9", Y= 35 },
+        new ChartData { X= "10", Y= 28 },
+        new ChartData { X= "11", Y= 34 },
+        new ChartData { X= "12", Y= 32 },
+        new ChartData { X= "13", Y= 40 },
+        new ChartData { X= "14", Y= 32 },
+        new ChartData { X= "15", Y= 35 },
+        new ChartData { X= "16", Y= 55 },
+        new ChartData { X= "17", Y= 38 },
+        new ChartData { X= "18", Y= 30 },
+    };
+    public DateTime? DateValue { get; set; } = DateTime.Now;
+
+    private void onChange(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime?> args)
+    {
+        DateValue = args.Value;
+        StateHasChanged();
+    }
+}
